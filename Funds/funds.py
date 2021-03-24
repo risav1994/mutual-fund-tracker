@@ -134,6 +134,32 @@ def get_reports(**kwargs):
     return df
 
 
+def optimize(func, min_value, max_value, max_iters=100, tol=1e-8, **kwargs):
+    val1 = func(min_value)
+    val2 = func(max_value)
+    if val1 * val2 < 0:
+        i = 0
+        while i < max_iters:
+            x0 = ((min_value * val2 - max_value * val1) / (val2 - val1))
+            c = val1 * val2
+            if c == 0:
+                break
+
+            min_value = max_value
+            max_value = x0
+            val2 = func(max_value)
+            val1 = func(min_value)
+            xm = ((min_value * val2 - max_value * val1) / (val2 - val1))
+            if abs(xm - x0) < tol:
+                break
+            i += 1
+        if i >= max_iters:
+            raise Execution("Iterations Exceeded")
+        return x0
+    else:
+        raise Exception("Check values")
+
+
 def calculate_xirr(df):
     cashflows = df["Value"].tolist()
     dates = df["Date of Execution"].tolist()
@@ -142,8 +168,9 @@ def calculate_xirr(df):
     dates.append(current_date)
     current_value = -sum(df["Current Value"])
     cashflows.append(current_value)
-    raise Exception([cashflows, dates])
-    xirr = optimize.newton(lambda r: sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)]), 0.1)
+    def func(r): return sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)])
+    xirr = optimize(func, -0.99, 10)
+    # xirr = optimize.newton(lambda r: sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)]), 0.1)
     xirr = round(100 * xirr, 2)
     return xirr
 
