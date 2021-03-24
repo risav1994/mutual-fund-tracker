@@ -157,10 +157,12 @@ def calculate_xirr(df, **kwargs):
 def select_funds(st, **kwargs):
     st.sidebar.title("View Investment Report")
     funds = get_funds(remove_session=False, **kwargs)
-    selection_values = st.sidebar.multiselect("Select Mutual Fund", funds)
+    selection_values = st.sidebar.multiselect("Select Mutual Fund", ["Select All", *funds])
     button = st.sidebar.button("View Report")
     st.text("")
     if button and len(selection_values) > 0:
+        if "Select All" in selection_values:
+            selection_values = funds
         df, current_date = get_reports(selection_values=selection_values, **kwargs)
         for selection_value in selection_values:
             st.write(f"**{selection_value}**")
