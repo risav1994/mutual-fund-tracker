@@ -136,6 +136,7 @@ def get_reports(**kwargs):
 
 def calculate_xirr(df):
     cashflows = df["Value"].tolist()
+    st.write(cashflows)
     dates = df["Date of Execution"].tolist()
     t0 = dates[0]
     current_date = datetime.now().date()
