@@ -147,6 +147,7 @@ def optimize(func, min_value, max_value, max_iters=100, tol=1e-8, **kwargs):
 
             min_value = max_value
             max_value = x0
+            kwargs.get("st").write([min_value, max_value])
             val2 = func(max_value)
             val1 = func(min_value)
             xm = ((min_value * val2 - max_value * val1) / (val2 - val1))
@@ -160,7 +161,7 @@ def optimize(func, min_value, max_value, max_iters=100, tol=1e-8, **kwargs):
         raise Exception("Check values")
 
 
-def calculate_xirr(df):
+def calculate_xirr(df, **kwargs):
     cashflows = df["Value"].tolist()
     dates = df["Date of Execution"].tolist()
     t0 = dates[0]
@@ -169,7 +170,7 @@ def calculate_xirr(df):
     current_value = -sum(df["Current Value"])
     cashflows.append(current_value)
     def func(r): return sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)])
-    xirr = optimize(func, -0.99, 10)
+    xirr = optimize(func, -0.99, 10, **kwargs)
     # xirr = optimize.newton(lambda r: sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)]), 0.1)
     xirr = round(100 * xirr, 2)
     return xirr
@@ -210,7 +211,7 @@ def select_funds(st, **kwargs):
             st.write(f"**XIRR (Internal Rate of Return):** {xirr}%")
             st.write(f"**Absolute Rate of Return:** {absolute_rr}%")
         sorted_df = df.sort_values("Date of Execution")
-        xirr = calculate_xirr(sorted_df)
+        xirr = calculate_xirr(sorted_df, st)
         total_current_value = sum(df["Current Value"])
         total_value = sum(df["Value"])
         absolute_rr = round(100 * (total_current_value / total_value - 1), 2)
