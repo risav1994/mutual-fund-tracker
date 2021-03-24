@@ -136,13 +136,13 @@ def get_reports(**kwargs):
 
 def calculate_xirr(df):
     cashflows = df["Value"].tolist()
-    raise Exception(cashflows)
     dates = df["Date of Execution"].tolist()
     t0 = dates[0]
     current_date = datetime.now().date()
     dates.append(current_date)
     current_value = -sum(df["Current Value"])
     cashflows.append(current_value)
+    raise Exception(cashflows)
     xirr = optimize.newton(lambda r: sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)]), 0.1)
     xirr = round(100 * xirr, 2)
     return xirr
