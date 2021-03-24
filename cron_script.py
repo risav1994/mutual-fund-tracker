@@ -27,12 +27,14 @@ for idx, response in enumerate(raw_response.split("\n")):
     fund_identifier = row[1]
     if row[1] == "-":
         fund_identifier = row[2]
+    date = row[-1].replace("\r", "")
+    date = datetime.strptime(date, "%d-%b-%Y")
     objects.append(
         NavHistories(
             fund_identifier=fund_identifier,
             fund_name=row[3],
             nav=float(row[-2]),
-            date=datetime.now().date(),
+            date=date.date(),
             is_deleted=False,
             updated_at=datetime.now()
         )
