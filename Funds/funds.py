@@ -193,8 +193,11 @@ def select_funds(st, **kwargs):
         total_current_value = sum(df["Current Value"])
         total_value = sum(df["Value"])
         absolute_rr = round(100 * (total_current_value / total_value - 1), 2)
+        profit_loss = round(sum(df["Profit/Loss"]), 2)
+        st.write("----------------------------")
         st.write(f"**Total Investment Value:** Rs. {round(total_value, 2)}")
         st.write(f"**Total Current Value:** Rs. {round(total_current_value, 2)}")
+        st.write(f"**Total Profit/Loss:** Rs. {profit_loss}")
         st.write(f"**Overall XIRR (Internal Rate of Return):** {xirr}%")
         st.write(f"**Overall Absolute Rate of Return:** {absolute_rr}%")
 
