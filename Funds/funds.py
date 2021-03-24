@@ -80,6 +80,7 @@ def get_current_navs(**kwargs):
     response = requests.get(mf_navs_url)
     raw_response = response.text
     current_navs = {}
+    date = datetime.now().date()
     for idx, response in enumerate(raw_response.split("\n")):
         if idx == 0:
             continue
@@ -90,7 +91,9 @@ def get_current_navs(**kwargs):
             current_navs[row[1]] = float(row[-2])
         elif row[2] in identifiers:
             current_navs[row[2]] = float(row[-2])
-    return current_navs
+        date = row[-1].replace("\r", "")
+        date = datetime.strptime(date, "%d-%b-%Y").date()
+    return current_navs, date
 
 
 def get_reports(**kwargs):
@@ -127,18 +130,18 @@ def get_reports(**kwargs):
             0,
             0
         ]
-    current_navs = get_current_navs(identifiers=fund_identifiers, **kwargs)
+    current_navs, current_date = get_current_navs(identifiers=fund_identifiers, **kwargs)
     df["Current Nav"] = df.apply(lambda x: current_navs[x["Fund Identifier"]], axis=1)
     df["Current Value"] = df.apply(lambda x: x["Units"] * x["Current Nav"], axis=1)
     df["Profit/Loss"] = df.apply(lambda x: x["Current Value"] - x["Value"], axis=1)
-    return df
+    return df, current_date
 
 
 def calculate_xirr(df, **kwargs):
     cashflows = df["Value"].tolist()
     dates = df["Date of Execution"].tolist()
     t0 = dates[0]
-    current_date = datetime.now().date()
+    current_date = kwargs.get("current_date")
     dates.append(current_date)
     current_value = -sum(df["Current Value"])
     cashflows.append(current_value)
@@ -158,12 +161,12 @@ def select_funds(st, **kwargs):
     button = st.sidebar.button("View Report")
     st.text("")
     if button and len(selection_values) > 0:
-        df = get_reports(selection_values=selection_values, **kwargs)
+        df, current_date = get_reports(selection_values=selection_values, **kwargs)
         for selection_value in selection_values:
             st.write(f"**{selection_value}**")
             _df = df[df["Fund Name"] == selection_value]
             _df = _df.drop(columns=["Fund Name", "Fund Identifier"])
-            xirr = calculate_xirr(_df, st=st)
+            xirr = calculate_xirr(_df, current_date=current_date)
             _df.loc["Total"] = ["", "", sum(_df["Units"]), sum(_df["Value"]), "", sum(_df["Current Value"]), sum(_df["Profit/Loss"])]
             _df["Profit/Loss"] = _df.apply(lambda x: round(x["Profit/Loss"], 3), axis=1)
             _df_styled = _df.style\
@@ -186,7 +189,7 @@ def select_funds(st, **kwargs):
             st.write(f"**XIRR (Internal Rate of Return):** {xirr}%")
             st.write(f"**Absolute Rate of Return:** {absolute_rr}%")
         sorted_df = df.sort_values("Date of Execution")
-        xirr = calculate_xirr(sorted_df)
+        xirr = calculate_xirr(sorted_df, current_date=current_date)
         total_current_value = sum(df["Current Value"])
         total_value = sum(df["Value"])
         absolute_rr = round(100 * (total_current_value / total_value - 1), 2)
