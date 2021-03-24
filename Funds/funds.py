@@ -188,7 +188,7 @@ def select_funds(st, **kwargs):
             st.write(f"**{selection_value}**")
             _df = df[df["Fund Name"] == selection_value]
             _df = _df.drop(columns=["Fund Name", "Fund Identifier"])
-            xirr = calculate_xirr(_df)
+            xirr = calculate_xirr(_df, st=st)
             _df.loc["Total"] = ["", "", sum(_df["Units"]), sum(_df["Value"]), "", sum(_df["Current Value"]), sum(_df["Profit/Loss"])]
             _df["Profit/Loss"] = _df.apply(lambda x: round(x["Profit/Loss"], 3), axis=1)
             _df_styled = _df.style\
@@ -211,7 +211,7 @@ def select_funds(st, **kwargs):
             st.write(f"**XIRR (Internal Rate of Return):** {xirr}%")
             st.write(f"**Absolute Rate of Return:** {absolute_rr}%")
         sorted_df = df.sort_values("Date of Execution")
-        xirr = calculate_xirr(sorted_df, st)
+        xirr = calculate_xirr(sorted_df)
         total_current_value = sum(df["Current Value"])
         total_value = sum(df["Value"])
         absolute_rr = round(100 * (total_current_value / total_value - 1), 2)
