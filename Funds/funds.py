@@ -24,10 +24,12 @@ def input_funds(st, **kwargs):
 
 def add_funds(mf_name, mf_code, **kwargs):
     db_session = kwargs.get("db_session")
+    subscriber = kwargs.get("subscriber")
     updated_at = datetime.utcnow()
     insert_instance = insert(MutualFunds).values(
         name=mf_name,
         identifier=mf_code,
+        subscriber=subscriber,
         is_deleted=False,
         updated_at=updated_at,
     )
@@ -36,6 +38,7 @@ def add_funds(mf_name, mf_code, **kwargs):
 
 def add_investment(name, date, nav, units, **kwargs):
     db_session = kwargs.get("db_session")
+    subscriber = kwargs.get("subscriber")
     updated_at = datetime.utcnow()
     reqd_cols = [MutualFunds.identifier]
     query = db_session.query(*reqd_cols)\
@@ -52,6 +55,7 @@ def add_investment(name, date, nav, units, **kwargs):
         nav=nav,
         units=units,
         execution_date=date,
+        subscriber=subscriber,
         is_deleted=False,
         updated_at=updated_at
     )
@@ -60,9 +64,11 @@ def add_investment(name, date, nav, units, **kwargs):
 
 def get_funds(**kwargs):
     db_session = kwargs.get('db_session')
+    subscriber = kwargs.get('subscriber')
     remove_session = kwargs.get('remove_session', True)
     reqd_cols = [MutualFunds.name]
     query = db_session.query(*reqd_cols)\
+        .filter(MutualFunds.subscriber == subscriber)\
         .filter(MutualFunds.is_deleted == False)\
         .all()
     results = [serialize(result_instance=result_instance, reqd_cols=reqd_cols) for result_instance in query]
@@ -99,11 +105,13 @@ def get_current_navs(**kwargs):
 def get_reports(**kwargs):
     db_session = kwargs.get('db_session')
     selection_values = kwargs.get('selection_values')
+    subscriber = kwargs.get('subscriber')
     reqd_cols = [InvestmentRecords.execution_date, InvestmentRecords.nav,
                  InvestmentRecords.units, MutualFunds.name, InvestmentRecords.fund_identifier]
     query = db_session.query(*reqd_cols)\
         .join(MutualFunds, MutualFunds.identifier == InvestmentRecords.fund_identifier)\
         .filter(MutualFunds.name.in_(selection_values))\
+        .filter(MutualFunds.subscriber == subscriber)\
         .filter(InvestmentRecords.is_deleted == False)\
         .filter(MutualFunds.is_deleted == False)\
         .order_by(asc(InvestmentRecords.execution_date))\
