@@ -111,7 +111,7 @@ def get_reports(**kwargs):
     query = db_session.query(*reqd_cols)\
         .join(MutualFunds, MutualFunds.identifier == InvestmentRecords.fund_identifier)\
         .filter(MutualFunds.name.in_(selection_values))\
-        .filter(MutualFunds.subscriber == subscriber)\
+        .filter(InvestmentRecords.subscriber == subscriber)\
         .filter(InvestmentRecords.is_deleted == False)\
         .filter(MutualFunds.is_deleted == False)\
         .order_by(asc(InvestmentRecords.execution_date))\
