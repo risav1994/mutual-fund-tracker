@@ -152,8 +152,7 @@ def calculate_xirr(df, **kwargs):
     current_date = kwargs.get("current_date")
     dates.append(current_date)
     current_value = -sum(df["Current Value"])
-    raise Exception(current_value + sum(cashflows))
-    if current_value + sum(cashflows) == 0:
+    if abs(current_value + sum(cashflows)) < 1e-5:
         xirr = 0
     else:
         cashflows.append(current_value)
