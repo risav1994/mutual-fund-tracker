@@ -157,7 +157,7 @@ def calculate_xirr(df, **kwargs):
     try:
         xirr = optimize.newton(func, 0.1)
     except RuntimeError:
-        xirr = optimize.newton(func, -0.99, maxiter=100)
+        xirr = optimize.newton(func, -0.99)
     xirr = round(100 * xirr, 2)
     return xirr
 
