@@ -185,16 +185,16 @@ def select_funds(st, **kwargs):
             _df["Profit/Loss"] = _df.apply(lambda x: round(x["Profit/Loss"], 3), axis=1)
             _df_styled = _df.style\
                 .applymap(
-                    lambda x: "color: green" if x > 0 else "color: red",
+                    lambda x: "color: green" if x >= 0 else "color: red",
                     subset=pd.IndexSlice[_df.index[:-1], ["Value"]]
                 ).applymap(
-                    lambda x: "background: #d2f8d2" if x > 0 else "background: #ffcccb",
+                    lambda x: "background: #d2f8d2" if x >= 0 else "background: #ffcccb",
                     subset=pd.IndexSlice[_df.index[:-1], ["Value"]]
                 ).applymap(
-                    lambda x: "color: green" if x > 0 else "color: red",
+                    lambda x: "color: green" if x >= 0 else "color: red",
                     subset=pd.IndexSlice[:, ["Profit/Loss"]]
                 ).applymap(
-                    lambda x: "background: #d2f8d2" if x > 0 else "background: #ffcccb",
+                    lambda x: "background: #d2f8d2" if x >= 0 else "background: #ffcccb",
                     subset=pd.IndexSlice[:, ["Profit/Loss"]]
                 )
 
