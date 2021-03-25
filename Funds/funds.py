@@ -152,12 +152,16 @@ def calculate_xirr(df, **kwargs):
     current_date = kwargs.get("current_date")
     dates.append(current_date)
     current_value = -sum(df["Current Value"])
-    cashflows.append(current_value)
-    def func(r): return sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)])
-    try:
-        xirr = optimize.newton(func, 0.1)
-    except RuntimeError:
-        xirr = optimize.newton(func, -0.99)
+    raise Execution(current_value + sum(cashflows))
+    if current_value + sum(cashflows) == 0:
+        xirr = 0
+    else:
+        cashflows.append(current_value)
+        def func(r): return sum([cf / (1 + r) ** ((dates[idx] - t0).days / 365) for idx, cf in enumerate(cashflows)])
+        try:
+            xirr = optimize.newton(func, 0.1)
+        except RuntimeError:
+            xirr = optimize.newton(func, -0.99)
     xirr = round(100 * xirr, 2)
     return xirr
 
